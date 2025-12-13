@@ -13,6 +13,5 @@ layout: default
 
 This component exports utility classes in the `cs.workers` namespace.
 
-The classes implement an abstraction layer on top of a process array to manage running `4D.SystemWorker` instances. 
-
+The classes implement an abstraction layer on top of a process array to manage running `4D.SystemWorker` instances which are not sharable.
 
