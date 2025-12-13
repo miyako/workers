@@ -1,6 +1,10 @@
-Class constructor
+property class : 4D:C1709.Class
+
+Class constructor($class : 4D:C1709.Class)
 	
 	var __WORKER__ : cs:C1710.workers
+	
+	This:C1470.class:=$class
 	
 Function start($port : Integer; $option : Object)
 	
@@ -11,11 +15,11 @@ Function start($port : Integer; $option : Object)
 	var $signal : 4D:C1709.Signal
 	$signal:=New signal:C1641("__WORKER__")
 	
-	CALL WORKER:C1389($signal.description; This:C1470._start; $port; $option; $signal)
+	CALL WORKER:C1389($signal.description; This:C1470._start; This:C1470.class; $port; $option; $signal)
 	
 	$signal.wait()
 	
-Function _start($port : Integer; $option : Object; $signal : 4D:C1709.Signal)
+Function _start($class : 4D:C1709.Class; $port : Integer; $option : Object; $signal : 4D:C1709.Signal)
 	
 	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710.workers))
 	Else 
@@ -28,8 +32,8 @@ Function _start($port : Integer; $option : Object; $signal : 4D:C1709.Signal)
 	If (OB Instance of:C1731($worker; 4D:C1709.SystemWorker)) && (Not:C34($worker.terminated))
 		//already started
 	Else 
-		var $LlamaEdge : cs:C1710._server
-		$LlamaEdge:=cs:C1710._server.new()
+		var $LlamaEdge : Object
+		$LlamaEdge:=$class.new()
 		$worker:=$LlamaEdge.start($option)
 		__WORKER__.insert($port; $worker)
 	End if 
