@@ -9,3 +9,8 @@ layout: default
 
 # workers
 
+#### Abstract
+
+This component exports utility classes in the `cs.workers` namespace.
+
+The classed implement an abstraction layer on top of a process array to manage running `4D.SystemWorker` instances. 
