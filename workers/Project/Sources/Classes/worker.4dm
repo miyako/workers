@@ -1,6 +1,6 @@
 Class constructor
 	
-	var __WORKER__ : cs:C1710._workers
+	var __WORKER__ : cs:C1710.workers
 	
 Function start($port : Integer; $option : Object)
 	
@@ -17,9 +17,9 @@ Function start($port : Integer; $option : Object)
 	
 Function _start($port : Integer; $option : Object; $signal : 4D:C1709.Signal)
 	
-	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710._workers))
+	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710.workers))
 	Else 
-		__WORKER__:=cs:C1710._workers.new()
+		__WORKER__:=cs:C1710.workers.new()
 	End if 
 	
 	var $worker : 4D:C1709.SystemWorker
@@ -38,7 +38,7 @@ Function _start($port : Integer; $option : Object; $signal : 4D:C1709.Signal)
 	
 Function _terminate($signal : 4D:C1709.Signal)
 	
-	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710._workers))
+	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710.workers))
 		
 		var $worker : 4D:C1709.SystemWorker
 		For each ($worker; __WORKER__.workers.extract("worker"))
@@ -63,9 +63,9 @@ Function terminate()
 	
 Function _isRunning($port : Integer; $signal : 4D:C1709.Signal)
 	
-	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710._workers))
+	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710.workers))
 	Else 
-		__WORKER__:=cs:C1710._workers.new()
+		__WORKER__:=cs:C1710.workers.new()
 	End if 
 	
 	var $worker : 4D:C1709.SystemWorker
