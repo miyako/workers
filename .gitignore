@@ -1,2 +1,3 @@
 workers/userPreferences.*
 workers/Project/DerivedData/*
+workers/Data/*
