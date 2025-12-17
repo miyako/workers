@@ -3,6 +3,6 @@
 <base name="workers" uuid="67710F518EFA4F8E8945EB13BDAA2363" collation_locale="ja">
 	<schema name="DEFAULT_SCHEMA"/>
 	<base_extra>
-		<journal_file journal_file_enabled="true"/>
+		<journal_file journal_file_enabled="false"/>
 	</base_extra>
 </base>
