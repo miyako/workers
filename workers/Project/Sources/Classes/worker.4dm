@@ -13,7 +13,7 @@ Function start($port : Integer; $option : Object)
 	End if 
 	
 	var $signal : 4D:C1709.Signal
-	$signal:=New signal:C1641("__WORKER__")
+	$signal:=New signal:C1641(".workers")
 	
 	CALL WORKER:C1389($signal.description; Formula:C1597(start); This:C1470.class; $port; $option; $signal)
 	
@@ -40,59 +40,21 @@ Function _start($class : 4D:C1709.Class; $port : Integer; $option : Object; $sig
 	
 	$signal.trigger()
 	
-Function _terminate($signal : 4D:C1709.Signal)
-	
-	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710.workers))
-		
-		var $worker : 4D:C1709.SystemWorker
-		For each ($worker; __WORKER__.workers.extract("worker"))
-			If (OB Instance of:C1731($worker; 4D:C1709.SystemWorker)) && (Not:C34($worker.terminated))
-				$worker.terminate()
-			End if 
-		End for each 
-	End if 
-	
-	__WORKER__.workers:=[]
-	
-	$signal.trigger()
-	
 Function terminate()
 	
 	var $signal : 4D:C1709.Signal
-	$signal:=New signal:C1641("__WORKER__")
+	$signal:=New signal:C1641(".workers")
 	
-	CALL WORKER:C1389($signal.description; This:C1470._terminate; $signal)
+	CALL WORKER:C1389($signal.description; Formula:C1597(terminate); $signal)
 	
 	$signal.wait()
-	
-Function _isRunning($port : Integer; $signal : 4D:C1709.Signal)
-	
-	If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WORKER__; cs:C1710.workers))
-	Else 
-		__WORKER__:=cs:C1710.workers.new()
-	End if 
-	
-	var $worker : 4D:C1709.SystemWorker
-	$worker:=__WORKER__.find($port)
-	
-	var $isRunning : Boolean
-	
-	If (OB Instance of:C1731($worker; 4D:C1709.SystemWorker)) && (Not:C34($worker.terminated))
-		$isRunning:=True:C214
-	End if 
-	
-	Use ($signal)
-		$signal.isRunning:=$isRunning
-	End use 
-	
-	$signal.trigger()
 	
 Function isRunning($port : Integer) : Boolean
 	
 	var $signal : 4D:C1709.Signal
-	$signal:=New signal:C1641("__WORKER__")
+	$signal:=New signal:C1641(".workers")
 	
-	CALL WORKER:C1389($signal.description; This:C1470._isRunning; $port; $signal)
+	CALL WORKER:C1389($signal.description; Formula:C1597(isRunning); $port; $signal)
 	
 	$signal.wait()
 	
