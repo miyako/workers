@@ -45,6 +45,23 @@ Checks whether a live (non-terminated) `4D.SystemWorker` is registered for `port
 | port | Integer | -> | Port to query |
 | Result | Boolean | <- | `True` if a running worker is registered for that port |
 
+## Examples
+
+```4d
+var $w : cs.workers.worker
+$w:=cs.workers.worker.new(cs.myApp.myServer)
+
+If (Not($w.isRunning(8080)))
+    $w.start(8080; {option1: "value"})
+End if
+```
+
+```4d
+var $w : cs.workers.worker
+$w:=cs.workers.worker.new(cs.myApp.myServer)
+$w.terminate()
+```
+
 ## See also
 
 - [`workers`](workers.md) — the registry that tracks port → SystemWorker mappings
