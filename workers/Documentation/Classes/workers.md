@@ -37,7 +37,7 @@ Returns the `4D.SystemWorker` registered for `port`, or `Null` if none exists. R
 
 #### insert (port : Integer; worker : 4D.SystemWorker)
 
-Adds a `{port, worker}` entry to the registry. If an entry for `port` already exists the call is a no-op — no duplicate entries are created.
+Adds a `{port, worker}` entry to the registry. If an entry for `port` already exists the call is a no-op — no duplicate entries are created. To replace an entry (for example after the registered worker has terminated), call `remove` first; [`worker.start`](worker.md) does this when it launches a new server on a port whose registered worker is no longer running.
 
 | Parameter | Type | | Description |
 | --- | --- | --- | --- |
