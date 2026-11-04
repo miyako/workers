@@ -16,7 +16,7 @@ Each entry in the internal collection is an object with two properties:
 | port | Integer | The TCP port the server is listening on |
 | worker | 4D.SystemWorker | The associated system worker process |
 
-The shared instance is lazily initialized — it is created the first time `worker.start` is called inside the named worker context.
+The shared instance is lazily initialized — it is created the first time `worker.start` or `worker.isRunning` is called inside the named worker context. `worker.terminate` does not create it; calling it before then is a no-op.
 
 ### Properties
 
