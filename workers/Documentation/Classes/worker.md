@@ -23,7 +23,7 @@ This ensures that the shared [`workers`](workers.md) registry is always mutated 
 
 #### start (port : Integer; option : Object)
 
-Dispatches a start request to the `.workers` named worker. If a non-terminated `4D.SystemWorker` is already registered for `port` the call is a no-op. Otherwise it instantiates `class`, calls `.start(option)` on it, and registers the resulting worker in the `workers` registry.
+Dispatches a start request to the `.workers` named worker. If a non-terminated `4D.SystemWorker` is already registered for `port` the call is a no-op. Otherwise it instantiates `class`, calls `.start(option)` on it, and registers the resulting worker in the `workers` registry, replacing any stale entry left by a worker that has terminated on that port.
 
 | Parameter | Type | | Description |
 | --- | --- | --- | --- |
@@ -34,7 +34,7 @@ Returns immediately if `option` is `Null` or not an object.
 
 #### terminate ()
 
-Dispatches a terminate request to the `.workers` named worker, shutting down the managed server process.
+Dispatches a terminate request to the `.workers` named worker, terminating every registered server process that is still running and clearing the registry. Calling it before any `start` is a no-op.
 
 #### isRunning (port : Integer) → Boolean
 

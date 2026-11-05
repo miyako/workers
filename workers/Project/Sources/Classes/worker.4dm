@@ -35,6 +35,7 @@ Function _start($class : 4D:C1709.Class; $port : Integer; $option : Object; $sig
 		var $LlamaEdge : Object
 		$LlamaEdge:=$class.new()
 		$worker:=$LlamaEdge.start($option)
+		__WORKER__.remove($port)
 		__WORKER__.insert($port; $worker)
 	End if 
 	

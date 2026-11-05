@@ -9,8 +9,9 @@ If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WOR
 			$worker.terminate()
 		End if 
 	End for each 
+	
+	__WORKER__.workers:=[]
+	
 End if 
-
-__WORKER__.workers:=[]
 
 $signal.trigger()
