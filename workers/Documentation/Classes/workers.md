@@ -1,5 +1,5 @@
 # workers
-### An in-memory registry that maps TCP ports to active `4D.SystemWorker` instances.
+### An in-memory registry that maps TCP ports to running `4D.SystemWorker` instances.
 
 > workers.new ()
 
@@ -7,51 +7,34 @@ No parameters.
 
 ## Description
 
-`cs.workers.workers` is a collection-backed registry. One shared instance (`__WORKER__`) is maintained inside the `.workers` named worker process and accessed exclusively through [`worker`](worker.md). Application code does not instantiate or call `workers` directly.
+`cs.workers.workers` is a collection-backed registry. One shared instance (`__WORKER__`) is kept inside the `".workers"` named worker process, and it is only accessed through [`worker`](worker.md). Application code does not create or call `workers` directly.
 
-Each entry in the internal collection is an object with two properties:
+The shared instance is created lazily, the first time a request reaches the `".workers"` worker.
 
-| Property | Type | Description |
-| --- | --- | --- |
-| port | Integer | The TCP port the server is listening on |
-| worker | 4D.SystemWorker | The associated system worker process |
-
-The shared instance is lazily initialized — it is created the first time `worker.start` or `worker.isRunning` is called inside the named worker context. `worker.terminate` does not create it; calling it before then is a no-op.
-
-### Properties
+There is at most one entry per port. Each entry is an object:
 
 | Property | Type | Description |
 | --- | --- | --- |
-| workers | Collection | Collection of `{port, worker}` entries |
+| port | Integer | The TCP port (1–65535) |
+| worker | 4D.SystemWorker | The server process |
+| class | 4D.Class | The class that started the server |
+| instance | Object | The instance of `class` whose `start` returned the worker |
+
+Classes are compared by name, plus an `OB Instance of` check on `instance`, because 4D 20.x cannot compare class references with `=`.
 
 ### Methods
 
-#### find (port : Integer) → 4D.SystemWorker
-
-Returns the `4D.SystemWorker` registered for `port`, or `Null` if none exists. Returns `Null` immediately for invalid port values (`≤ 0` or `> 65535`).
-
-| Parameter | Type | | Description |
-| --- | --- | --- | --- |
-| port | Integer | -> | Port to look up |
-| Result | 4D.SystemWorker | <- | Registered worker, or `Null` |
-
-#### insert (port : Integer; worker : 4D.SystemWorker)
-
-Adds a `{port, worker}` entry to the registry. If an entry for `port` already exists the call is a no-op — no duplicate entries are created. To replace an entry (for example after the registered worker has terminated), call `remove` first; [`worker.start`](worker.md) does this when it launches a new server on a port whose registered worker is no longer running.
-
-| Parameter | Type | | Description |
-| --- | --- | --- | --- |
-| port | Integer | -> | Port to register |
-| worker | 4D.SystemWorker | -> | Worker to associate with the port |
-
-#### remove (port : Integer)
-
-Removes the entry for `port` from the registry. If no entry exists the call is a no-op.
-
-| Parameter | Type | | Description |
-| --- | --- | --- | --- |
-| port | Integer | -> | Port whose entry should be removed |
+| Method | Description |
+| --- | --- |
+| find (port) → 4D.SystemWorker | The worker registered for `port`, or `Null` (also `Null` for an invalid port) |
+| entry (port) → Object | The entry registered for `port`, or `Null` |
+| isAlive (entry) → Boolean | `True` if `entry` holds a `4D.SystemWorker` that is not terminated |
+| owns (entry; class) → Boolean | `True` if `entry` was registered by `class` |
+| unwrap (result) → 4D.SystemWorker | `result` if it is a `4D.SystemWorker`, its `worker` property if that is one, otherwise `Null` |
+| dispose (result) | Calls `result.terminate()` if it exists. Used for results that cannot be registered |
+| insert (port; worker; class; instance) | Adds an entry. Does nothing if the port is invalid, `worker` is not a `4D.SystemWorker`, or the port already has an entry (call `remove` first) |
+| remove (port) | Removes the entry for `port`, if any |
 
 ## See also
 
-- [`worker`](worker.md) — the coordinator that owns the shared `workers` instance and gates all access to it
+- [`worker`](worker.md): the coordinator that owns the shared `workers` instance and gates all access to it
