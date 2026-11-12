@@ -10,8 +10,11 @@ on:
 jobs:
 
   test:
-    # macOS only: the harness spawns /bin/sleep servers and counts them with ps/pgrep
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
 
       - name: checkout
@@ -21,13 +24,20 @@ jobs:
         id: tool
         uses: miyako/4D/.github/actions/tool4d-get-version@v1
 
+      #inline: the Windows archive is bzip2 despite its .tar.xz name, so `tar xJf` (tool4d-download) fails
       - name: get tool4d
         id: get
         run: |
-          [ "${ARCH}" = arm ] && suffix=arm64 || suffix=x86_64
-          curl -sfL "https://resources-download.4d.com/release/${BRANCH}/${VERSION}/${BUILD}/mac/tool4d_${suffix}.tar.xz" -o tool4d.archive
+          base="https://resources-download.4d.com/release/${BRANCH}/${VERSION}/${BUILD}"
+          if [ "${RUNNER_OS}" = Windows ]; then
+            url="${base}/win/tool4d_win.tar.xz"; exe=tool4d/tool4d.exe
+          else
+            [ "${ARCH}" = arm ] && suffix=arm64 || suffix=x86_64
+            url="${base}/mac/tool4d_${suffix}.tar.xz"; exe=tool4d.app/Contents/MacOS/tool4d
+          fi
+          curl -sfL "${url}" -o tool4d.archive
           tar xf tool4d.archive
-          echo "tool4d_executable_path=tool4d.app/Contents/MacOS/tool4d" >> "${GITHUB_OUTPUT}"
+          echo "tool4d_executable_path=${exe}" >> "${GITHUB_OUTPUT}"
         shell: bash
         env:
           BRANCH: ${{ steps.tool.outputs.branch }}

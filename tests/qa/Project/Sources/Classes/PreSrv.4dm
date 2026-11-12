@@ -5,4 +5,4 @@ Function start($option : Object) : 4D.SystemWorker
 	var $state; $time; $mode : Integer
 	PROCESS PROPERTIES:C336(Current process; $name; $state; $time; $mode)
 	_put("preemptive"; ($mode ?? 1))
-	return 4D.SystemWorker.new("/bin/sleep 45090")
+	return 4D.SystemWorker.new(_sleep(45090))

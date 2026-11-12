@@ -90,12 +90,12 @@ Case of
 		_check("T10c failed server not registered"; Not($z.isRunning(45019)) & ($z.errors.length=0); JSON Stringify($z.errors))
 		
 		$z:=cs.workers.worker.new(cs.ReadySrv)
-		File("/tmp/wt-ready-45021").delete()
+		_dir().file("wt-ready-45021").delete()
 		$t0:=Milliseconds
 		$ok:=$z.start(45021; {})
-		_check("T11 isReady() polled until true"; $ok & ((Milliseconds-$t0)>=900) & File("/tmp/wt-ready-45021").exists & $z.isRunning(45021); "ms="+String(Milliseconds-$t0)+" "+JSON Stringify($z.errors))
+		_check("T11 isReady() polled until true"; $ok & ((Milliseconds-$t0)>=900) & _dir().file("wt-ready-45021").exists & $z.isRunning(45021); "ms="+String(Milliseconds-$t0)+" "+JSON Stringify($z.errors))
 		_check("T11b terminate ready server"; $z.terminate() & (_count("sleep 45021")=0); JSON Stringify($z.errors))
-		File("/tmp/wt-ready-45021").delete()
+		_dir().file("wt-ready-45021").delete()
 		
 		$z:=cs.workers.worker.new(cs.NeverSrv)
 		$z.timeout:=2
@@ -125,11 +125,13 @@ Case of
 		
 		//real TCP listener: terminate() returns once the port is free
 		$a:=cs.workers.worker.new(cs.PortSrv)
-		$a.startupWait:=200
-		_check("T13 listener start"; $a.start(45030; {}) & (_count("/usr/bin/perl -e use Socket")=1); JSON Stringify($a.errors))
+		//PowerShell takes a few seconds to bind on Windows: wait long enough to see the second listener fail
+		$a.startupWait:=Is Windows ? 5000 : 200
+		_check("T13 listener start"; $a.start(45030; {}) & (_count("listener")=1); JSON Stringify($a.errors))
 		$ok:=$a.start(45031; {port: 45030})
-		_check("T13b second listener on the same TCP port -> false, -8 (bind failed)"; Not($ok) & _has($a; -8) & (Position("bind failed"; JSON Stringify($a.errors))>0) & (_count("/usr/bin/perl -e use Socket")=1); JSON Stringify($a.errors))
-		_check("T13c terminate() returns after the process has exited"; $a.terminate(45030) & (_count("/usr/bin/perl -e use Socket")=0); "procs="+String(_count("/usr/bin/perl -e use Socket")))
+		_check("T13b second listener on the same TCP port -> false, -8 (bind failed)"; Not($ok) & _has($a; -8) & (Position("bind failed"; JSON Stringify($a.errors))>0) & (_count("listener")=1); JSON Stringify($a.errors))
+		_check("T13c terminate() returns after the process has exited"; $a.terminate(45030) & (_count("listener")=0); "procs="+String(_count("listener")))
+		$a.startupWait:=200
 		$bad:=0
 		$t0:=Milliseconds
 		_put("race"; 0)
@@ -139,7 +141,7 @@ Case of
 				_log("T14 #"+String($i)+" "+JSON Stringify($a.errors))
 			End if 
 		End for 
-		_check("T14 stress 20x terminate-then-start on the same TCP port"; ($bad=0) & (Num(_get("race"))=0) & (_count("/usr/bin/perl -e use Socket")=0); "bad="+String($bad)+" started before the previous process exited="+String(_get("race"))+" ms="+String(Milliseconds-$t0))
+		_check("T14 stress 20x terminate-then-start on the same TCP port"; ($bad=0) & (Num(_get("race"))=0) & (_count("listener")=0); "bad="+String($bad)+" started before the previous process exited="+String(_get("race"))+" ms="+String(Milliseconds-$t0))
 		
 		//compiled: .workers runs preemptively, so consumer code must be thread-safe
 		$z:=cs.workers.worker.new(cs.PreSrv)

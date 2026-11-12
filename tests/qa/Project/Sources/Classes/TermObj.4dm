@@ -2,7 +2,7 @@
 property sw : 4D.SystemWorker
 Class constructor
 Function start($option : Object) : Object
-	This.sw:=4D.SystemWorker.new("/bin/sleep "+String($option.secs))
+	This.sw:=4D.SystemWorker.new(_sleep($option.secs))
 	return This
 Function terminate()
 	This.sw.terminate()
