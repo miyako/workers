@@ -37,10 +37,9 @@ If (Value type:C1509(__WORKER__)=Is object:K8:27) && (OB Instance of:C1731(__WOR
 		End if 
 	End if 
 	
+	//terminate() is asynchronous: the caller then waits for the processes to exit (see _reap)
 	For each ($entry; $entries)
-		If (__WORKER__.isAlive($entry))
-			$entry.worker.terminate()
-		End if 
+		__WORKER__.retire($entry)
 		__WORKER__.remove($entry.port)
 	End for each 
 	
