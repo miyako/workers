@@ -63,6 +63,7 @@ The server class receives a copy of `option` with a `port` property set to `port
 - With `port`, terminates the server on that port, but only if this class owns it. Otherwise it returns `False`, sets `owner`, and reports error `-5`.
 - Terminating a port with no registered server, or calling it before any `start`, does nothing and returns `True`.
 - `4D.SystemWorker.terminate()` is asynchronous. `terminate` waits (at most `timeout` seconds) until the processes have actually exited, so the port can be reused as soon as it returns `True`. If a process is still running at the deadline, the call returns `False` with error `-9`. The process stays tracked: `isRunning` returns `False`, `start` on its port fails with `-9` until it exits, and calling `terminate` again waits for it again.
+- `4D.SystemWorker.terminate()` stops the process with `SIGKILL` (on macOS it kills the whole process group). There is no graceful shutdown: a server's `SIGTERM` handler never runs, so it cannot flush data or clean up. If a server needs that, ask it to shut down itself (for example through its own API) before calling `terminate`.
 
 #### isRunning (port : Integer) → Boolean
 
@@ -80,7 +81,7 @@ Each call clears `errors` and fills it when something fails. Elements have the s
 | errCode | Meaning |
 | --- | --- |
 | -1 | Timed out waiting for the `".workers"` worker (see `timeout`) |
-| -2 | The request was aborted by an error that no handler caught (typically an error in the server class) |
+| -2 | The request was aborted by an error that no handler caught (typically an error in the server class, including a `4D.SystemWorker.new()` whose binary is missing or not executable) |
 | -3 | The server class's `start` did not return a `4D.SystemWorker` |
 | -4 | Invalid port (must be 1–65535) |
 | -5 | The port is held by another class (see `owner`) |
@@ -92,7 +93,7 @@ Each call clears `errors` and fills it when something fails. Elements have the s
 
 Notes:
 
-- An error raised inside the server class cannot be trapped by the component's error handler. It aborts the request in the worker, and the call returns `False` with error `-2`. In headless or server mode, 4D may also end the `".workers"` process, which terminates the servers it owns.
+- An error raised inside the server class cannot be trapped by the component's error handler. It aborts the request in the worker, and the call returns `False` with error `-2`. This includes a missing or non-executable binary: `4D.SystemWorker.new()` raises its error in the server class, so `start` reports the generic `-2` rather than `-8`. In headless or server mode, 4D may also end the `".workers"` process, which terminates the servers it owns.
 - After a timeout (`-1`) in `start`, a server that is launched later is terminated rather than registered (see `start`). `terminate` and `isRunning` requests may still complete later in the worker.
 - Calls made from inside the `".workers"` process run directly instead of being dispatched, so there is no deadlock. This covers a server class's `start` and `4D.SystemWorker` callbacks such as `onTerminate`. These calls cannot wait inside that process, so `start` skips the startup check (`startupWait`, `isReady`) and `terminate` returns without waiting for the processes to exit.
 - The `".workers"` process never waits on a `4D.SystemWorker`, because `SystemWorker.wait()` would run its other queued requests re-entrantly. The startup check and the wait for exit run in the calling process, which polls the `".workers"` process with short requests. If the server class's own code calls `wait()`, requests queued for `".workers"` run inside that call; `start` handles this.
