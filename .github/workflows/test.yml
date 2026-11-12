@@ -1,0 +1,40 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+
+  test:
+    # macOS only: the harness spawns /bin/sleep servers and counts them with ps/pgrep
+    runs-on: macos-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: get tool version
+        id: tool
+        uses: miyako/4D/.github/actions/tool4d-get-version@v1
+
+      - name: get tool4d
+        id: get
+        run: |
+          [ "${ARCH}" = arm ] && suffix=arm64 || suffix=x86_64
+          curl -sfL "https://resources-download.4d.com/release/${BRANCH}/${VERSION}/${BUILD}/mac/tool4d_${suffix}.tar.xz" -o tool4d.archive
+          tar xf tool4d.archive
+          echo "tool4d_executable_path=tool4d.app/Contents/MacOS/tool4d" >> "${GITHUB_OUTPUT}"
+        shell: bash
+        env:
+          BRANCH: ${{ steps.tool.outputs.branch }}
+          VERSION: ${{ steps.tool.outputs.version }}
+          BUILD: ${{ steps.tool.outputs.build }}
+          ARCH: ${{ steps.tool.outputs.arch }}
+
+      - name: compile and test
+        run: tests/qa/run.sh "${{ steps.get.outputs.tool4d_executable_path }}"
+        shell: bash

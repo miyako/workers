@@ -1,3 +1,5 @@
 workers/userPreferences.*
 workers/Project/DerivedData/*
 workers/Data/*
+workers/Libraries/
+workers/Resources/en.lproj/
