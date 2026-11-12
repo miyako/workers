@@ -8,6 +8,28 @@ var $i; $t0; $bad : Integer
 var $ok : Boolean
 var $flag : Object
 Case of 
+	: ($mode="compile")
+		var $project : 4D.File
+		var $res : Object
+		var $e : Object
+		var $msgs : Text
+		$project:=Folder(fk database folder).file("Compile/workers/Project/workers.4DProject")
+		If ($project.exists)
+			$res:=Compile project($project)
+			$bad:=0
+			$msgs:=""
+			If ($res.errors#Null)
+				For each ($e; $res.errors)
+					If (Bool($e.isError))
+						$bad:=$bad+1
+						$msgs:=$msgs+" "+String($e.message)+(($e.code#Null) ? (" @"+String($e.code.path)+":"+String($e.lineInFile)) : "")+";"
+					End if 
+				End for each 
+			End if 
+			_check("C1 compile workers.4DProject"; Bool($res.success) & ($bad=0); "errors="+String($bad)+$msgs)
+		Else 
+			_check("C1 compile workers.4DProject"; False; "missing "+$project.platformPath)
+		End if 
 	: ($mode="main")
 		$w:=cs.workers.worker.new(cs.Srv)
 		_check("T0 terminate before start is a no-op"; $w.terminate(); JSON Stringify($w.errors))

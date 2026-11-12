@@ -65,6 +65,10 @@ jobs:
           build: ${{ steps.tool.outputs.build }}
           arch: ${{ steps.tool.outputs.arch }}
 
+      - name: compile and test
+        run: tests/qa/run.sh "${{ steps.get.outputs.tool4d_executable_path }}"
+        shell: bash
+
       - name: build
         id: build
         uses: miyako/4D/.github/actions/build-component@v1
@@ -144,6 +148,10 @@ jobs:
           version: ${{ steps.tool.outputs.version }}
           build: ${{ steps.tool.outputs.build }}
           arch: ${{ steps.tool.outputs.arch }}
+
+      - name: compile and test
+        run: tests/qa/run.sh "${{ steps.get.outputs.tool4d_executable_path }}"
+        shell: bash
 
       - name: build
         id: build
